@@ -132,6 +132,7 @@
     if (!track) return;
     const cards = Array.from(track.children);
     if (!cards.length) return;
+    if (track.dataset.loopInitialized === 'true') return;
 
     const cloneFragment = document.createDocumentFragment();
     cards.forEach((card) => {
@@ -140,7 +141,36 @@
       cloneFragment.appendChild(clone);
     });
     track.appendChild(cloneFragment);
-    track.classList.add('is-ready');
+    track.dataset.loopInitialized = 'true';
+
+    const firstClone = track.children[cards.length];
+    if (!firstClone) return;
+    const resetAt = firstClone.offsetLeft - track.firstElementChild.offsetLeft;
+    if (!resetAt || resetAt <= 0) return;
+
+    let offset = 0;
+    let lastTs = 0;
+    let isPaused = false;
+    const speed = window.innerWidth <= 768 ? 30 : 42; // px/sec
+
+    const onEnter = () => { isPaused = true; };
+    const onLeave = () => { isPaused = false; };
+    track.addEventListener('mouseenter', onEnter);
+    track.addEventListener('mouseleave', onLeave);
+
+    function frame(ts) {
+      if (!lastTs) lastTs = ts;
+      const dt = (ts - lastTs) / 1000;
+      lastTs = ts;
+      if (!isPaused) {
+        offset += speed * dt;
+        if (offset >= resetAt) offset -= resetAt;
+        track.style.transform = `translateX(${-offset}px)`;
+      }
+      window.requestAnimationFrame(frame);
+    }
+
+    window.requestAnimationFrame(frame);
   }
 
   initAmenitiesLoop();

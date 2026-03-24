@@ -110,15 +110,16 @@ input, button, a { -webkit-tap-highlight-color: transparent; }
   margin: 0 auto;
   padding: 0 2.5rem;
   display: flex; align-items: center; justify-content: space-between;
-  gap: 2rem;
+  gap: 1.2rem;
 }
 .nav-left, .nav-right {
-  display: flex; align-items: center; gap: 2rem;
+  display: flex; align-items: center; gap: clamp(0.8rem, 1.1vw, 1.4rem);
   flex: 1;
+  min-width: 0;
 }
 .nav-right { justify-content: flex-end; }
 .nav-link {
-  font-size: 0.78rem;
+  font-size: clamp(0.64rem, 0.7vw, 0.76rem);
   font-weight: 400;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -150,7 +151,7 @@ input, button, a { -webkit-tap-highlight-color: transparent; }
 .nav-brand {
   flex-shrink: 0;
   font-family: var(--font-title);
-  font-size: 1.5rem;
+  font-size: clamp(1.15rem, 1.65vw, 1.45rem);
   letter-spacing: 0.02em;
   color: var(--white);
   transition: color 0.3s ease;
@@ -329,7 +330,7 @@ input, button, a { -webkit-tap-highlight-color: transparent; }
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  padding-top: calc(var(--navbar-height) + 54px);
+  padding-top: calc(var(--navbar-height) + 82px);
 }
 .hero-eyebrow {
   display: flex; align-items: center; gap: 12px;
@@ -345,11 +346,11 @@ input, button, a { -webkit-tap-highlight-color: transparent; }
   font-size: clamp(3.5rem, 8vw, 7rem);
   font-weight: 300;
   color: var(--white);
-  line-height: 1.05;
-  margin-bottom: 20px;
+  line-height: 0.95;
+  margin-bottom: 16px;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
-.hero-title em { font-style: italic; color: #f0d2ae; display: block; }
+.hero-title em { font-style: italic; color: #f0d2ae; display: block; margin-bottom: -4px; }
 .hero-subtitle {
   font-size: 1rem;
   letter-spacing: 0.15em;
@@ -688,13 +689,9 @@ input, button, a { -webkit-tap-highlight-color: transparent; }
   gap: 20px;
   width: max-content;
   padding: 20px 40px;
-  animation: amenitiesLoop 32s linear infinite;
+  will-change: transform;
 }
-.amenities-track:hover { animation-play-state: paused; }
 .amenity-card { width: 260px; flex-shrink: 0; }
-.amenities-track.is-ready { animation-name: amenitiesLoop; }
-.amenities-track:not(.is-ready) { animation: none; }
-@keyframes amenitiesLoop { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .amenity-img-wrap {
   position: relative; border-radius: var(--radius);
   overflow: hidden; aspect-ratio: 4/3;
@@ -981,7 +978,7 @@ body.menu-open {
 /* ===========================
    RESPONSIVE
    =========================== */
-@media (max-width: 1150px) {
+@media (max-width: 1280px) {
   .nav-left, .nav-right { display: none; }
   .hamburger { display: flex; }
 }
