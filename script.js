@@ -1,9 +1,10 @@
 /* ============================================================
-   EXPERION SECTOR 151 — LANDING PAGE SCRIPTS
+   GODREJ IVARA — LANDING PAGE SCRIPTS
    ============================================================ */
 
 (function () {
   'use strict';
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ─────────────────────────────────
      1. PRELOADER
@@ -13,14 +14,14 @@
     if (preloader) {
       setTimeout(() => {
         preloader.classList.add('hidden');
-        document.body.style.overflow = '';
+        document.body.classList.remove('modal-open', 'menu-open');
         // Trigger hero reveal after preloader
         triggerHeroReveal();
-      }, 1200);
+      }, prefersReducedMotion ? 0 : 1200);
     }
   });
 
-  document.body.style.overflow = 'hidden';
+  document.body.classList.add('menu-open');
 
   /* ─────────────────────────────────
      2. HERO REVEAL
@@ -56,7 +57,8 @@
     menuOpen = !menuOpen;
     hamburger.classList.toggle('active', menuOpen);
     mobileMenu.classList.toggle('open', menuOpen);
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    hamburger.setAttribute('aria-expanded', String(menuOpen));
+    document.body.classList.toggle('menu-open', menuOpen);
   });
 
   // Close on mobile link click
@@ -75,7 +77,8 @@
     menuOpen = false;
     hamburger.classList.remove('active');
     mobileMenu.classList.remove('open');
-    document.body.style.overflow = '';
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('menu-open');
   }
 
   /* ─────────────────────────────────
@@ -121,6 +124,28 @@
   });
 
   /* ─────────────────────────────────
+     6.1 AMENITIES LOOP
+  ───────────────────────────────── */
+  function initAmenitiesLoop() {
+    if (prefersReducedMotion) return;
+    const track = document.querySelector('.amenities-track');
+    if (!track) return;
+    const cards = Array.from(track.children);
+    if (!cards.length) return;
+
+    const cloneFragment = document.createDocumentFragment();
+    cards.forEach((card) => {
+      const clone = card.cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      cloneFragment.appendChild(clone);
+    });
+    track.appendChild(cloneFragment);
+    track.classList.add('is-ready');
+  }
+
+  initAmenitiesLoop();
+
+  /* ─────────────────────────────────
      7. FLOOR PLAN TABS
   ───────────────────────────────── */
   const tabs = document.querySelectorAll('.plan-tab');
@@ -148,18 +173,28 @@
      8. MODAL
   ───────────────────────────────── */
   const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalBox = modalBackdrop?.querySelector('.modal-box');
+  let lastFocusedElement = null;
   let modalShown4s = false;
   let modalShown50 = false;
   let modalShown100 = false;
 
   window.openModal = function () {
+    if (!modalBackdrop) return;
+    lastFocusedElement = document.activeElement;
     modalBackdrop.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
+    const firstField = modalBackdrop.querySelector('input, button, a, [tabindex]:not([tabindex="-1"])');
+    firstField?.focus();
   };
 
   window.closeModal = function () {
+    if (!modalBackdrop) return;
     modalBackdrop.classList.remove('open');
-    document.body.style.overflow = '';
+    document.body.classList.remove('modal-open');
+    if (lastFocusedElement instanceof HTMLElement) {
+      lastFocusedElement.focus();
+    }
   };
 
   // Close on Escape
@@ -169,13 +204,28 @@
     }
   });
 
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab' || !modalBackdrop.classList.contains('open') || !modalBox) return;
+    const focusable = modalBox.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
   // Auto-show modal after 4 seconds
   setTimeout(() => {
     if (!modalShown4s) {
       modalShown4s = true;
-      openModal();
+      if (!modalBackdrop.classList.contains('open')) openModal();
     }
-  }, 4000);
+  }, prefersReducedMotion ? 0 : 4000);
 
   // Auto-show at 50% and 100% scroll
   window.addEventListener('scroll', () => {
@@ -273,6 +323,7 @@
 
       // Create simple overlay lightbox
       const overlay = document.createElement('div');
+      const previousOverflow = document.body.style.overflow;
       overlay.style.cssText = `
         position:fixed; inset:0; z-index:3000;
         background:rgba(0,0,0,0.92);
@@ -317,7 +368,7 @@
         imgEl.style.transform = 'scale(0.9)';
         setTimeout(() => {
           overlay.remove();
-          document.body.style.overflow = '';
+          document.body.style.overflow = previousOverflow;
         }, 300);
       };
 
@@ -354,7 +405,7 @@
      13. PARALLAX — hero subtle effect
   ───────────────────────────────── */
   const heroImg = document.querySelector('.hero-img');
-  if (heroImg) {
+  if (heroImg && !prefersReducedMotion) {
     window.addEventListener('scroll', () => {
       const scrolled = window.scrollY;
       if (scrolled < window.innerHeight * 1.5) {
